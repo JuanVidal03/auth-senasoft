@@ -18,7 +18,7 @@ export const register = async(user) => {
         return response;
 
     } catch (error) {
-        return error.message;
+        return error;
     }
 }
 

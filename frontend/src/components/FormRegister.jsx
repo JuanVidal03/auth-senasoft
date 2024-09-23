@@ -1,12 +1,10 @@
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Button, Label, TextInput } from "flowbite-react";
 import { useForm } from "react-hook-form";
-import { login } from "../services/auth.services.js";
-import { AuthContext } from "../context/Auth.context.jsx";
+import { register as registerService } from "../services/auth.services.js";
 
-const FormLogin = () => {
+const FormRegister = () => {
   const navigate = useNavigate();
   const {
     register,
@@ -15,22 +13,16 @@ const FormLogin = () => {
     reset,
   } = useForm();
 
-  const { setUser, setIsAuthenticated } = useContext(AuthContext);
-
-  const handleLogin = handleSubmit(async (data) => {
+  const handleRegister = handleSubmit(async (data) => {
     try {
-      const loginResponse = await login(data);
+      const registerResponse = await registerService(data);
 
-      if (loginResponse.status === 404)
-        return toast.error("El usuario no existe.");
+      if (registerResponse.status === 400)
+        return toast.error(registerResponse.response.data.message);
 
-      if (loginResponse.status === 400)
-        return toast.error("Credenciales incorrectas.");
-
-      if (loginResponse.status === 200) {
-        setUser(loginResponse.data.data.user);
-        setIsAuthenticated(true);
-        navigate("/");
+      if (registerResponse.status === 201) {
+        toast.success(registerResponse.data.message);
+        navigate("/login");
         return reset();
       }
     } catch (error) {
@@ -40,17 +32,36 @@ const FormLogin = () => {
 
   return (
     <div className="bg-white shadow-md rounded-xl py-8 px-4 w-[400px]">
-      <h2 className="mb-8 font-semibold text-2xl">¡Bienvenido de vuelta!</h2>
+      <h2 className="mb-8 font-semibold text-2xl">¡Te estabamos esperando!</h2>
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          handleLogin();
+          handleRegister();
         }}
         className="flex flex-col gap-4"
       >
         <div>
           <div className="mb-2 block">
-            <Label htmlFor="email1" value="Correo Eléctronico*" />
+            <Label value="Nombre Completo*" />
+          </div>
+          <TextInput
+            type="text"
+            placeholder="Jhon Doe"
+            {...register("nombre", {
+              required: {
+                value: true,
+                message: "Este campo es obligatorio.",
+              },
+            })}
+          />
+          {errors.nombre && (
+            <span className="text-red-500">{errors.nombre.message}</span>
+          )}
+        </div>
+
+        <div>
+          <div className="mb-2 block">
+            <Label value="Correo Eléctronico*" />
           </div>
           <TextInput
             type="email"
@@ -70,9 +81,10 @@ const FormLogin = () => {
             <span className="text-red-500">{errors.email.message}</span>
           )}
         </div>
+
         <div>
           <div className="mb-2 block">
-            <Label htmlFor="password1" value="Contraseña*" />
+            <Label value="Contraseña*" />
           </div>
           <TextInput
             type="password"
@@ -88,10 +100,10 @@ const FormLogin = () => {
             <span className="text-red-500">{errors.password.message}</span>
           )}
         </div>
-        <Button type="submit">Ingresar</Button>
+        <Button type="submit">Registrarme</Button>
       </form>
     </div>
   );
 };
 
-export default FormLogin;
+export default FormRegister;
