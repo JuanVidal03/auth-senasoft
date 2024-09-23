@@ -10,6 +10,7 @@ export default {
     extend: {
       colors: {
         'bg-black-soft': '#000000a8',
+        'dark': '#1e1e1e'
       }
     },
   },
